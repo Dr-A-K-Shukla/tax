@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Income Tax Certificate FY 2025-26</title>
+
+<style>
+@page{
+    size:A4;
+    margin:15mm;
+}
+*{box-sizing:border-box;}
+
+body{
+    font-family:"Times New Roman",serif;
+    background:#e6e6e6;
+    font-size:18px;
+    margin:0;
+}
+
+/* FORM */
+.form-box{
+    max-width:850px;
+    margin:20px auto;
+    background:#fff;
+    padding:25px;
+    border:1px solid #999;
+}
+label{
+    font-weight:bold;
+    margin-top:12px;
+    display:block;
+}
+input, select{
+    width:100%;
+    padding:10px;
+    margin-top:6px;
+    font-size:17px;
+}
+button{
+    margin-top:18px;
+    padding:10px 25px;
+    font-size:17px;
+    background:#003366;
+    color:#fff;
+    border:none;
+    cursor:pointer;
+}
+.footer-note{
+    margin-top:25px;
+    text-align:center;
+    font-size:14px;
+}
+
+/* CERTIFICATE */
+.certificate{
+    display:none;
+    width:100%;
+    max-width:190mm;
+    min-height:267mm;
+    margin:0 auto;
+    background:#fff;
+    padding:22px;
+    border:2px solid #000;
+}
+.header{
+    text-align:center;
+    font-size:26px;
+    font-weight:bold;
+}
+.sub-header{
+    text-align:center;
+    font-size:19px;
+    margin-top:6px;
+}
+.date-row{
+    text-align:right;
+    font-size:16px;
+    margin-top:10px;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+th,td{
+    border:1px solid #000;
+    padding:11px;
+    font-size:17px;
+}
+.no-border td{border:none;}
+.right{text-align:right;}
+
+.signature-table{
+    margin-top:70px;
+    width:100%;
+}
+.signature-table td{
+    border:none;
+    padding-top:45px;
+    font-size:17px;
+    text-align:center;
+}
+
+/* PRINT */
+@media print{
+    body *{visibility:hidden;}
+    .certificate,.certificate *{visibility:visible;}
+    .certificate{
+        position:absolute;
+        left:0;
+        top:0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- FORM -->
+<div class="form-box">
+<h3>Income Tax Certificate Generator</h3>
+
+<label>Employee Name</label>
+<input type="text" id="empName">
+
+<label>Designation</label>
+<select id="designation">
+    <option value="">--Select--</option>
+    <option>Professor</option>
+    <option>Associate Professor</option>
+    <option>Assistant Professor</option>
+    <option>Clerk</option>
+    <option>Accountant</option>
+    <option>Other</option>
+</select>
+
+<label>PAN Number</label>
+<input type="text" id="pan" maxlength="10" placeholder="ABCDE1234F">
+
+<label>Mobile Number</label>
+<input type="text" id="mobile" maxlength="10" placeholder="10 digit mobile number">
+
+<label>College Name</label>
+<select id="collegeSelect">
+    <option>Raja Shri Krishna Dutt PG College, Jaunpur</option>
+    <option>DBS PG College, Govind Nagar, Kanpur</option>
+</select>
+
+<label>Annual Income (₹)</label>
+<input type="number" id="income">
+
+<button onclick="generate()">Generate Certificate</button>
+<button onclick="window.print()">Print (A4)</button>
+
+<div class="footer-note">
+Code is prepared by <b>Dr. Ashish Kumar Shukla</b><br>
+Assistant Professor, Department of Mathematics<br>
+DBS PG College, Kanpur<br>
+<b>Email:</b> akshukla@dbskanpur.ac.in
+</div>
+</div>
+
+<!-- CERTIFICATE -->
+<div class="certificate" id="certificate">
+
+<div class="header" id="certCollege"></div>
+<div class="sub-header">
+Income Tax Calculation Certificate<br>
+FY 2025–26 (AY 2026–27) – New Tax Regime
+</div>
+
+<div class="date-row">
+Date: <span id="certDate"></span>
+</div>
+
+<table>
+<tr>
+    <td><b>Employee Name</b></td><td><b id="cName"></b></td>
+    <td><b>Designation</b></td><td id="cDesig"></td>
+</tr>
+<tr>
+    <td><b>PAN No.</b></td><td id="cPAN"></td>
+    <td><b>Mobile No.</b></td><td id="cMobile"></td>
+</tr>
+</table>
+
+<table>
+<tr><th>Particulars</th><th class="right">Amount (₹)</th></tr>
+<tr><td>Gross Annual Income</td><td class="right" id="gross"></td></tr>
+<tr><td>Less: Standard Deduction</td><td class="right">75,000</td></tr>
+<tr><td><b>Taxable Income</b></td><td class="right" id="taxable"></td></tr>
+</table>
+
+<h3 style="margin-top:20px;">Slab-wise Income Tax Calculation</h3>
+
+<table>
+<tr>
+<th>Income Slab</th>
+<th>Rate</th>
+<th class="right">Calculated Tax (₹)</th>
+</tr>
+<tbody id="slabs"></tbody>
+<tr>
+<th colspan="2">Total Tax Payable</th>
+<th class="right" id="totalTax"></th>
+</tr>
+</table>
+
+<table class="signature-table">
+<tr>
+<td>___________________________<br><b>Principal</b></td>
+<td>___________________________<br><b>Employee Signature</b></td>
+</tr>
+</table>
+
+</div>
+
+<script>
+function generate(){
+let name = empName.value.trim();
+let desig = designation.value;
+let pan = document.getElementById("pan").value.trim().toUpperCase();
+let mobile = document.getElementById("mobile").value.trim();
+let college = collegeSelect.value;
+let incomeVal = income.value;
+
+if(!name || !desig || !pan || !mobile || !incomeVal){
+    alert("Please fill all details properly");
+    return;
+}
+
+let incomeNum = parseFloat(incomeVal);
+let taxable = incomeNum - 75000;
+if(taxable < 0) taxable = 0;
+
+certCollege.innerText = college;
+cName.innerText = name;
+cDesig.innerText = desig;
+cPAN.innerText = pan;
+cMobile.innerText = mobile;
+certDate.innerText = new Date().toLocaleDateString("en-GB");
+
+gross.innerText = incomeNum.toLocaleString();
+document.getElementById("taxable").innerText = taxable.toLocaleString();
+
+let t=taxable;
+let tax5=0,tax10=0,tax15=0,tax20=0,tax25=0,tax30=0;
+
+if(t>2400000){tax30=(t-2400000)*0.30;t=2400000;}
+if(t>2000000){tax25=(t-2000000)*0.25;t=2000000;}
+if(t>1600000){tax20=(t-1600000)*0.20;t=1600000;}
+if(t>1200000){tax15=(t-1200000)*0.15;t=1200000;}
+if(t>800000){tax10=(t-800000)*0.10;t=800000;}
+if(t>400000){tax5=(t-400000)*0.05;}
+
+slabs.innerHTML = `
+<tr><td>Up to 4,00,000</td><td>Nil</td><td class="right">0</td></tr>
+<tr><td>4,00,001 – 8,00,000</td><td>5%</td><td class="right">${Math.round(tax5).toLocaleString()}</td></tr>
+<tr><td>8,00,001 – 12,00,000</td><td>10%</td><td class="right">${Math.round(tax10).toLocaleString()}</td></tr>
+<tr><td>12,00,001 – 16,00,000</td><td>15%</td><td class="right">${Math.round(tax15).toLocaleString()}</td></tr>
+<tr><td>16,00,001 – 20,00,000</td><td>20%</td><td class="right">${Math.round(tax20).toLocaleString()}</td></tr>
+<tr><td>20,00,001 – 24,00,000</td><td>25%</td><td class="right">${Math.round(tax25).toLocaleString()}</td></tr>
+<tr><td>Above 24,00,000</td><td>30%</td><td class="right">${Math.round(tax30).toLocaleString()}</td></tr>
+`;
+
+let totalCalc = tax5+tax10+tax15+tax20+tax25+tax30;
+totalTax.innerText = taxable<=1200000 ? "0" : Math.round(totalCalc).toLocaleString();
+
+certificate.style.display="block";
+}
+</script>
+
+</body>
+</html>
