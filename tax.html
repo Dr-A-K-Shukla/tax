@@ -3,113 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <title>Income Tax Certificate FY 2025-26</title>
-
 <style>
 @page{size:A4;margin:15mm;}
 *{box-sizing:border-box;}
-
-body{
-    font-family:"Times New Roman",serif;
-    background:#e6e6e6;
-    font-size:16px;
-    margin:0;
-}
-
-/* FORM */
+body{font-family:"Times New Roman",serif;background:#e6e6e6;font-size:16px;margin:0;}
 .form-box{
-    max-width:850px;
-    margin:15px auto;
-    background:#f2f6ff;
-    padding:20px;
-    border:1px solid #999;
+    max-width:850px;margin:15px auto;background:#f2f6ff;padding:20px;border:1px solid #999;position:relative;z-index:2;
 }
 label{font-weight:bold;margin-top:10px;display:block;}
-input,select{
-    width:100%;
-    padding:8px;
-    margin-top:5px;
-    font-size:15px;
-}
-button{
-    margin-top:15px;
-    padding:8px 20px;
-    font-size:15px;
-    background:#003366;
-    color:#fff;
-    border:none;
-    cursor:pointer;
-}
-.footer-note{
-    margin-top:18px;
-    text-align:center;
-    font-size:13px;
-}
+input,select{width:100%;padding:8px;margin-top:5px;font-size:15px;}
+button{margin-top:15px;padding:8px 20px;font-size:15px;background:#003366;color:#fff;border:none;cursor:pointer;}
+.footer-note{margin-top:18px;text-align:center;font-size:13px;}
 
 /* CERTIFICATE */
 .certificate{
-    display:none;
-    max-width:190mm;
-    margin:auto;
-    background:#fff;
-    padding:18px;
-    border:2px solid #000;
+    display:none;max-width:190mm;margin:auto;background:#fff;padding:18px;border:2px solid #000;position:relative;overflow:hidden;z-index:1;
 }
 .header{text-align:center;font-size:22px;font-weight:bold;}
 .sub-header{text-align:center;font-size:16px;margin-top:4px;}
 .date-row{text-align:right;font-size:14px;margin-top:6px;}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:10px;
-}
-th,td{
-    border:1px solid #000;
-    padding:8px;
-    font-size:15px;
-}
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+th,td{border:1px solid #000;padding:8px;font-size:15px;}
 .right{text-align:right;}
+.signature-table{margin-top:45px;}
+.signature-table td{border:none;padding-top:30px;text-align:center;}
 
-.signature-table{
-    margin-top:45px;
-}
-.signature-table td{
-    border:none;
-    padding-top:30px;
+/* WATERMARK */
+.watermark{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%) rotate(-45deg);
+    font-size:36px;
+    color:rgba(0,0,0,0.12);
     text-align:center;
+    width:80%;
+    z-index:0;
+    pointer-events:none;
+    display:none; /* Default hidden */
 }
 
 /* PRINT */
 @media print {
-
-    body {
-        background: #fff;
-        margin: 0;
-        padding: 0;
-    }
-
-    /* Hide form only during print */
-    .form-box {
-        display: none !important;
-    }
-
-    /* Show certificate properly */
-    .certificate {
-        display: block !important;
-        position: relative;
-        margin: 0 auto;
-        width: 100%;
-        max-width: 190mm;
-        min-height: 267mm;
-        padding: 18px;
-        border: 2px solid #000;
-    }
+    body { background: #fff; margin: 0; padding: 0; }
+    .form-box { display: none !important; }
+    .certificate { display: block !important;position:relative;margin:0 auto;width:100%;max-width:190mm;min-height:267mm;padding:18px;border:2px solid #000;}
 }
-
-
 </style>
 </head>
-
 <body>
 
 <div class="form-box">
@@ -130,28 +71,29 @@ th,td{
 </select>
 
 <label>PAN Number</label>
-<input type="text" id="panNo" maxlength="10"
-placeholder="ABCDE1234F">
+<input type="text" id="panNo" maxlength="10" placeholder="ABCDE1234F">
 
 <label>Mobile Number</label>
-<input type="text" id="mobileNo" maxlength="10"
-placeholder="10 digit mobile number">
+<input type="text" id="mobileNo" maxlength="10" placeholder="10 digit mobile number">
 
 <label>College Name</label>
-<select id="college">
+<select id="college" onchange="toggleOtherCollege()">
 <option value="">-- Select College --</option>
-<option>Raja Shri Krishna Dutt PG College, Jaunpur</option>
-<option>DBS PG College, Govind Nagar, Kanpur</option>
+<option value="Raja Shri Krishna Dutt PG College, Jaunpur">Raja Shri Krishna Dutt PG College, Jaunpur</option>
+<option value="DBS PG College, Govind Nagar, Kanpur">DBS PG College, Govind Nagar, Kanpur</option>
+<option value="Other">Other</option>
 </select>
 
+<div id="otherCollegeDiv" style="display:none; margin-top:5px;">
+<label>Enter College Name</label>
+<input type="text" id="otherCollege" placeholder="Enter college name">
+</div>
+
 <label>Annual Income (₹)</label>
-<input type="number" id="annualIncome"
-placeholder="Enter annual income amount">
+<input type="number" id="annualIncome" placeholder="Enter annual income amount">
 
 <label>Tax Already Paid (₹)</label>
-<input type="number" id="taxPaid"
-placeholder="Enter tax already paid (if any)" value="0">
-
+<input type="number" id="taxPaid" placeholder="Enter tax already paid (if any)" value="0">
 
 <button onclick="generate()">Generate Certificate</button>
 <button onclick="window.print()">Print (A4)</button>
@@ -159,12 +101,19 @@ placeholder="Enter tax already paid (if any)" value="0">
 <div class="footer-note">
 Prepared by <b>Dr. Ashish Kumar Shukla</b><br>
 Assistant Professor, Mathematics, DBS PG College Kanpur<br>
-Email: <b>akshukla@dbskanpur.ac.in</b>
+Email: <b>akshukla@dbskanpur.ac.in</b><br>
+Mob No.: <b>9044158184</b>
 </div>
 </div>
 
 <!-- CERTIFICATE -->
 <div class="certificate" id="certificate">
+<div class="watermark" id="watermark">
+Prepared by <b>Dr. Ashish Kumar Shukla</b><br>
+Assistant Professor, Mathematics, DBS PG College Kanpur<br>
+Email: <b>akshukla@dbskanpur.ac.in</b><br>
+Mob No.: <b>9044158184</b>
+</div>
 
 <div class="header" id="cCollege"></div>
 <div class="sub-header">
@@ -190,18 +139,15 @@ FY 2025–26 (AY 2026–27) – New Regime
 <tr><td>Gross Income</td><td class="right" id="gross"></td></tr>
 <tr><td>Standard Deduction</td><td class="right">75,000</td></tr>
 <tr><td><b>Taxable Income</b></td><td class="right" id="taxable"></td></tr>
-<tr><td><b>Total Tax Payable</b></td><td class="right" id="totalTax"></td></tr>
+<tr><td><b>Total Tax (Before Cess)</b></td><td class="right" id="totalTax"></td></tr>
+<tr><td><b>Health & Education Cess (4%)</b></td><td class="right" id="cess"></td></tr>
 <tr><td>Tax Already Paid</td><td class="right" id="paid"></td></tr>
 <tr><td><b>Balance Tax (Rounded)</b></td><td class="right"><b id="balance"></b></td></tr>
 </table>
-<h3 style="margin-top:15px;">Income Tax Slab-wise Calculation</h3>
 
+<h3 style="margin-top:15px;">Income Tax Slab-wise Calculation</h3>
 <table>
-<tr>
-<th>Income Slab</th>
-<th>Rate</th>
-<th class="right">Tax (₹)</th>
-</tr>
+<tr><th>Income Slab</th><th>Rate</th><th class="right">Tax (₹)</th></tr>
 <tbody id="slabBody"></tbody>
 </table>
 
@@ -211,94 +157,90 @@ FY 2025–26 (AY 2026–27) – New Regime
 <td>_____________________<br><b>Employee Signature</b></td>
 </tr>
 </table>
-
 </div>
 
 <script>
+function toggleOtherCollege(){
+    let college = document.getElementById("college").value;
+    document.getElementById("otherCollegeDiv").style.display =
+        (college === "Other") ? "block" : "none";
+}
+
 function round10(x){ return Math.ceil(x/10)*10; }
 
 function generate(){
+    let name   = document.getElementById("empName").value.trim();
+    let des    = document.getElementById("designation").value;
+    let pan    = document.getElementById("panNo").value.trim().toUpperCase();
+    let mob    = document.getElementById("mobileNo").value.trim();
+    let collegeSelect = document.getElementById("college").value;
+    let otherCollegeName = document.getElementById("otherCollege").value.trim();
+    let income = Number(document.getElementById("annualIncome").value);
+    let paid   = Number(document.getElementById("taxPaid").value || 0);
 
-let name   = document.getElementById("empName").value.trim();
-let des    = document.getElementById("designation").value;
-let pan    = document.getElementById("panNo").value.trim().toUpperCase();
-let mob    = document.getElementById("mobileNo").value.trim();
-let col    = document.getElementById("college").value;
-let income = Number(document.getElementById("annualIncome").value);
-let paid   = Number(document.getElementById("taxPaid").value || 0);
+    if(name=="" || des=="" || pan=="" || mob=="" || income<=0 ||
+       (collegeSelect=="" || (collegeSelect==="Other" && otherCollegeName===""))){
+        alert("Please fill all fields properly");
+        return;
+    }
 
-if(name=="" || des=="" || pan=="" || mob=="" || income<=0){
-    alert("Please fill all fields properly");
-    return;
-}
+    let col = (collegeSelect==="Other") ? otherCollegeName : collegeSelect;
 
-/* TAXABLE INCOME */
-let taxable = income - 75000;
-if(taxable < 0) taxable = 0;
+    // SHOW WATERMARK ONLY IF OTHER COLLEGE
+    let watermark = document.getElementById("watermark");
+    if(collegeSelect==="Other"){ watermark.style.display="block"; }
+    else { watermark.style.display="none"; }
 
-/* SLAB STRUCTURE */
-let slabs = [
- {label:"Up to 4,00,000", amount:400000, rate:0},
- {label:"4,00,001 – 8,00,000", amount:400000, rate:0.05},
- {label:"8,00,001 – 12,00,000", amount:400000, rate:0.10},
- {label:"12,00,001 – 16,00,000", amount:400000, rate:0.15},
- {label:"16,00,001 – 20,00,000", amount:400000, rate:0.20},
- {label:"20,00,001 – 24,00,000", amount:400000, rate:0.25},
- {label:"Above 24,00,000", amount:Infinity, rate:0.30}
-];
+    let taxable = income - 75000;
+    if(taxable<0) taxable=0;
 
-let remaining = taxable;
-let slabHTML = "";
-let calculatedTax = 0;
+    let slabs = [
+        {label:"Up to 4,00,000", amount:400000, rate:0},
+        {label:"4,00,001 – 8,00,000", amount:400000, rate:0.05},
+        {label:"8,00,001 – 12,00,000", amount:400000, rate:0.10},
+        {label:"12,00,001 – 16,00,000", amount:400000, rate:0.15},
+        {label:"16,00,001 – 20,00,000", amount:400000, rate:0.20},
+        {label:"20,00,001 – 24,00,000", amount:400000, rate:0.25},
+        {label:"Above 24,00,000", amount:Infinity, rate:0.30}
+    ];
 
-/* SLAB CALCULATION ALWAYS */
-slabs.forEach(s=>{
-    let slabIncome = Math.min(remaining, s.amount);
-    if(slabIncome < 0) slabIncome = 0;
+    let remaining=taxable, slabHTML="", calculatedTax=0;
+    slabs.forEach(s=>{
+        let slabIncome = Math.min(remaining, s.amount);
+        if(slabIncome<0) slabIncome=0;
+        let slabTax = slabIncome * s.rate;
+        calculatedTax += slabTax;
+        remaining -= slabIncome;
+        slabHTML += `<tr>
+            <td>${s.label}</td>
+            <td>${s.rate*100}%</td>
+            <td class="right">${Math.round(slabTax).toLocaleString()}</td>
+        </tr>`;
+    });
 
-    let slabTax = slabIncome * s.rate;
+    let taxBeforeCess = (taxable<=1200000)?0:calculatedTax;
+    let cess = taxBeforeCess*0.04;
+    let finalTax = taxBeforeCess+cess;
+    let balance = finalTax - paid;
+    if(balance<0) balance=0;
+    balance=round10(balance);
 
-    calculatedTax += slabTax;
-    remaining -= slabIncome;
-
-    slabHTML += `
-    <tr>
-        <td>${s.label}</td>
-        <td>${s.rate*100}%</td>
-        <td class="right">${Math.round(slabTax).toLocaleString()}</td>
-    </tr>`;
-});
-
-/* RULE APPLY HERE ONLY */
-let finalTax = (taxable <= 1200000) ? 0 : calculatedTax;
-
-/* BALANCE */
-let balance = finalTax - paid;
-if(balance < 0) balance = 0;
-balance = round10(balance);
-
-/* OUTPUT */
-document.getElementById("certificate").style.display="block";
-document.getElementById("cCollege").innerText = col;
-document.getElementById("cName").innerText = name;
-document.getElementById("cDes").innerText = des;
-document.getElementById("cPAN").innerText = pan;
-document.getElementById("cMob").innerText = mob;
-document.getElementById("cDate").innerText =
-    new Date().toLocaleDateString("en-GB");
-
-document.getElementById("gross").innerText = income.toLocaleString();
-document.getElementById("taxable").innerText = taxable.toLocaleString();
-document.getElementById("totalTax").innerText =
-    Math.round(finalTax).toLocaleString();
-
-document.getElementById("paid").innerText = paid.toLocaleString();
-document.getElementById("balance").innerText = balance.toLocaleString();
-document.getElementById("slabBody").innerHTML = slabHTML;
+    document.getElementById("certificate").style.display="block";
+    document.getElementById("cCollege").innerText=col;
+    document.getElementById("cName").innerText=name;
+    document.getElementById("cDes").innerText=des;
+    document.getElementById("cPAN").innerText=pan;
+    document.getElementById("cMob").innerText=mob;
+    document.getElementById("cDate").innerText=new Date().toLocaleDateString("en-GB");
+    document.getElementById("gross").innerText=income.toLocaleString();
+    document.getElementById("taxable").innerText=taxable.toLocaleString();
+    document.getElementById("totalTax").innerText=Math.round(taxBeforeCess).toLocaleString();
+    document.getElementById("cess").innerText=Math.round(cess).toLocaleString();
+    document.getElementById("paid").innerText=paid.toLocaleString();
+    document.getElementById("balance").innerText=balance.toLocaleString();
+    document.getElementById("slabBody").innerHTML=slabHTML;
 }
 </script>
-
-
 
 </body>
 </html>
